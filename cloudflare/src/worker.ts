@@ -10,10 +10,34 @@ export interface Env {
 }
 
 const CB_CONFIGS: Record<string, { openThreshold: number; windowSec: number; initBackoffSec: number; maxBackoffSec: number }> = {
-  youtube:      { openThreshold: 5, windowSec: 60,  initBackoffSec: 120,  maxBackoffSec: 1800 },
-  gemini:       { openThreshold: 3, windowSec: 30,  initBackoffSec: 65,   maxBackoffSec: 600  },
-  hf_upload:    { openThreshold: 6, windowSec: 120, initBackoffSec: 30,   maxBackoffSec: 900  },
-  hf_download:  { openThreshold: 6, windowSec: 120, initBackoffSec: 30,   maxBackoffSec: 900  },
+
+  youtube:{ 
+    openThreshold: 5, 
+    windowSec: 60,  
+    initBackoffSec: 120,  
+    maxBackoffSec: 1800 
+    },
+
+  gemini:{ 
+    openThreshold: 3, 
+    windowSec: 30,  
+    initBackoffSec: 65,   
+    maxBackoffSec: 600  
+    },
+
+  hf_upload:{ 
+    openThreshold: 6, 
+    windowSec: 120, 
+    initBackoffSec: 30,   
+    maxBackoffSec: 900  
+    },
+    
+  hf_download:{ 
+    openThreshold: 6, 
+    windowSec: 120, 
+    initBackoffSec: 30,   
+    maxBackoffSec: 900  
+    },
 };
 
 const VALID_SHARD_KEYS = new Set(["cpu", "t4", "p100", "tpu"]);
