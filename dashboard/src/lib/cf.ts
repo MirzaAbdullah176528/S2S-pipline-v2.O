@@ -44,6 +44,7 @@ export interface RunData {
 }
 
 async function cfFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!CF_WORKER_URL) throw new Error("CF_WORKER_URL not set");
   const url = `${CF_WORKER_URL}${path}`;
   const res = await fetch(url, {
     ...init,

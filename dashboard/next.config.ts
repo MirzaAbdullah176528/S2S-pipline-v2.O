@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     typedRoutes: true,
+    cacheComponents: true,
   },
   env: {
     CF_WORKER_URL:    process.env.CF_WORKER_URL    ?? "",
