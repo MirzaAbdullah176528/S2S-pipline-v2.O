@@ -46,7 +46,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 
 async function HealthCard() {
-  // "use cache";
+  "use cache";
   let health;
   try { health = await getHealth(); } catch { return <p style={{ color: "var(--red)" }}>Worker unreachable</p>; }
 
@@ -87,7 +87,7 @@ async function HealthCard() {
 }
 
 async function FleetCard() {
-  // "use cache";
+  "use cache";
   let sessions: SessionRow[] = [];
   try { sessions = await getSessions(); } catch { /* show empty */ }
 
@@ -138,7 +138,7 @@ async function FleetCard() {
 }
 
 async function StagesCard() {
-  // "use cache";
+  "use cache";
   let data;
   try { data = await getRun(RUN_ID); } catch { return null; }
 
