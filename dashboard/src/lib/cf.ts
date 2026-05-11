@@ -60,8 +60,7 @@ async function cfFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function getHealth(): Promise<HealthData> {
-  const res = await fetch(`${CF_WORKER_URL}/health`, { next: { revalidate: 10 } });
-  return res.json();
+  return cfFetch<HealthData>("/health");
 }
 
 export async function getSessions(): Promise<SessionRow[]> {
