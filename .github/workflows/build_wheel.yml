@@ -1,0 +1,45 @@
+name: Build Rust Extension Wheel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'rust_extensions/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          curl -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install maturin
+        run: |
+          source $HOME/.cargo/env
+          pip install maturin
+
+      - name: Build wheel
+        run: |
+          source $HOME/.cargo/env
+          cd rust_extensions
+          maturin build --release --out dist/
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: urdu-s2s-core-wheel
+          path: rust_extensions/dist/*.whl
+          retention-days: 30
+
+      - name: List built wheels
+        run: |
+          echo "Built wheels:"
+          ls -la rust_extensions/dist/

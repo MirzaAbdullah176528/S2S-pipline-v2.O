@@ -1,0 +1,56 @@
+/**
+ * Urdu S2S Orchestration Worker
+ * Wrangler 4.69+ — JSONC format (recommended for Wrangler 4.x)
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "urdu-s2s-worker",
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-05-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // ── D1 Database ────────────────────────────────────────────────────────────
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "urdu-s2s-state",
+      // Replace with your actual D1 database_id after: wrangler d1 create urdu-s2s-state
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations",
+    },
+  ],
+
+  // ── Queues ─────────────────────────────────────────────────────────────────
+  "queues": {
+    "producers": [
+      {
+        "queue": "urdu-s2s-tasks",
+        "binding": "TASK_QUEUE",
+      },
+    ],
+  },
+
+  // ── Cron Triggers (lease reclaim every 5 min + CB cooldown reset) ──────────
+  "triggers": {
+    "crons": ["*/5 * * * *"],
+  },
+
+  // ── Environment Variables (non-secret) ─────────────────────────────────────
+  // Secrets are set via: wrangler secret put WORKER_SECRET
+  "vars": {
+    "ENVIRONMENT": "production",
+    "P1B_MAX_GLOBAL": "6",
+    "LEASE_TTL_SECONDS": "600",
+    "MAX_CB_WRITES_PER_MIN": "12",
+  },
+
+  // ── Observability ──────────────────────────────────────────────────────────
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "invocation_logs": true,
+      "head_sampling_rate": 1,
+    },
+  },
+}

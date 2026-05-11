@@ -1,0 +1,24 @@
+[package]
+name = "urdu-s2s-core"
+version = "0.1.0"
+edition = "2021"
+description = "PyO3 Rust extensions for the Urdu S2S Orchestration Pipeline"
+authors = ["Urdu S2S Team"]
+license = "MIT"
+
+[lib]
+name = "urdu_s2s_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+numpy = "0.21"
+ndarray = "0.16"
+rayon = "1.10"
+hound = "3.5"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

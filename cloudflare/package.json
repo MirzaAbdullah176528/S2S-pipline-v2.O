@@ -1,0 +1,22 @@
+{
+  "name": "urdu-s2s-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit",
+    "migrate:local": "wrangler d1 migrations apply urdu-s2s-state --local",
+    "migrate:remote": "wrangler d1 migrations apply urdu-s2s-state",
+    "migrate:list": "wrangler d1 migrations list urdu-s2s-state",
+    "d1:create": "wrangler d1 create urdu-s2s-state",
+    "queue:create": "wrangler queues create urdu-s2s-tasks",
+    "secret:worker": "wrangler secret put WORKER_SECRET",
+    "health": "curl -s https://urdu-s2s-worker.workers.dev/health | jq"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250508.0",
+    "typescript": "^5.8.0",
+    "wrangler": "^4.69.0"
+  }
+}
