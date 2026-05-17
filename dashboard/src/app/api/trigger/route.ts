@@ -39,9 +39,10 @@ async function createCfRun(runId: string): Promise<void> {
 async function getNotebookText(runId: string): Promise<string> {
   try {
     const listRes = await fetch(
-      `https://www.kaggle.com/api/v1/datasets/${DATASET_SLUG}/versions/1/files`,
+      `https://www.kaggle.com/api/v1/datasets/${DATASET_SLUG}/files`,
       { headers: { Authorization: basicAuth() } }
     );
+    
     if (listRes.ok) {
       const listData = await listRes.json() as { files?: { name: string; url: string }[] };
       const file = listData.files?.find(f => f.name === NOTEBOOK_FILE);
@@ -52,10 +53,13 @@ async function getNotebookText(runId: string): Promise<string> {
           const injectCell = {
             cell_type: "code",
             source: [
-              "import os\n",
-              `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
-              `print(f'[trigger] RUN_ID injected: ${runId}')\n`,
-            ],
+            "import os, sys\n",
+            `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
+            "import glob\n",
+            "print('\\n'.join(glob.glob('/kaggle/input/**/*.ipynb', recursive=True)))\n",
+            "mount = [d for d in os.listdir('/kaggle/input') if 's2s' in d.lower() or 'pipline' in d.lower()]\n",
+            "print('mount dirs:', mount)\n",
+          ],
             metadata: {},
             outputs: [],
             execution_count: null,
