@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { getHealth, getSessions, getRun, formatElapsed, sessionTypeLabel } from "@/lib/cf";
 import type { SessionRow, RunStageRow } from "@/lib/cf";
+import TriggerButton from "@/component/TriggerButton";
+import React from "react";
 
 const RUN_ID = process.env.DEFAULT_RUN_ID ?? "run_default";
 
@@ -10,11 +12,13 @@ function StatusDot({ alive }: { alive: boolean }) {
       display: "inline-block", width: 8, height: 8, borderRadius: "50%",
       background: alive ? "var(--green)" : "var(--red)",
       boxShadow: alive ? "0 0 6px var(--green)" : undefined,
-      marginRight: 6, flexShrink: 0,
+      marginRight: 7, flexShrink: 0,
     }} />
   );
 }
-
+function add(){
+  
+}
 function Badge({ label, color }: { label: string; color: string }) {
   return (
     <span style={{
@@ -213,6 +217,8 @@ export default function DashboardPage() {
           Live status — refreshes every 10s via Next.js cache revalidation
         </p>
       </header>
+
+      <TriggerButton />
 
       <Suspense fallback={<p style={{ color: "var(--text-dim)" }}>Loading health…</p>}>
         <HealthCard />
