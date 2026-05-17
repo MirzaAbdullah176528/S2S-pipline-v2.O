@@ -95,6 +95,15 @@ async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> 
   return { kernelSlug: data.ref ?? `${KAGGLE_USERNAME}/${SESSION_TYPE}-${runId}` };
 }
 
+export async function GET(): Promise<NextResponse> {
+  return NextResponse.json({
+    kaggle_username: process.env.KAGGLE_USERNAME ?? "NOT SET",
+    kaggle_key_length: process.env.KAGGLE_KEY?.length ?? 0,
+    kaggle_key_prefix: process.env.KAGGLE_KEY?.slice(0, 6) ?? "NOT SET",
+    cf_worker_url: process.env.CF_WORKER_URL ?? "NOT SET",
+  });
+}
+
 export async function POST(): Promise<NextResponse> {
   if (!CF_WORKER_URL || !CF_WORKER_SECRET || !KAGGLE_USERNAME || !KAGGLE_KEY) {
     return NextResponse.json(
