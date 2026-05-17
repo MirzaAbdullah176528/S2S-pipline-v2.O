@@ -5,9 +5,9 @@ const CF_WORKER_SECRET = process.env.CF_WORKER_SECRET!;
 const KAGGLE_USERNAME  = process.env.KAGGLE_USERNAME!;
 const KAGGLE_KEY       = process.env.KAGGLE_KEY!;
 
-const DATASET_SLUG     = "mirza176528/s2s-pipline-v2-0-2";
-const NOTEBOOK_FILE    = "session_cpu_collect.ipynb";
-const SESSION_TYPE     = "cpu_collect";
+const DATASET_SLUG  = "mirza176528/s2s-pipline-v2-0-2";
+const SESSION_TYPE  = "cpu_collect";
+const NOTEBOOK_FILE = "session_cpu_collect.ipynb";
 
 function generateRunId(): string {
   const now = new Date();
@@ -17,11 +17,15 @@ function generateRunId(): string {
   return `run_${date}_${time}`;
 }
 
+function basicAuth(): string {
+  return "Basic " + Buffer.from(`${KAGGLE_USERNAME}:${KAGGLE_KEY}`).toString("base64");
+}
+
 async function createCfRun(runId: string): Promise<void> {
   const res = await fetch(`${CF_WORKER_URL}/api/run`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type":    "application/json",
       "X-Worker-Secret": CF_WORKER_SECRET,
     },
     body: JSON.stringify({ run_id: runId, session_type: SESSION_TYPE }),
@@ -32,17 +36,47 @@ async function createCfRun(runId: string): Promise<void> {
   }
 }
 
-async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> {
-  const credentials = Buffer.from(`${KAGGLE_USERNAME}:${KAGGLE_KEY}`).toString("base64");
+async function getNotebookText(runId: string): Promise<string> {
+  try {
+    const listRes = await fetch(
+      `https://www.kaggle.com/api/v1/datasets/${DATASET_SLUG}/versions/1/files`,
+      { headers: { Authorization: basicAuth() } }
+    );
+    if (listRes.ok) {
+      const listData = await listRes.json() as { files?: { name: string; url: string }[] };
+      const file = listData.files?.find(f => f.name === NOTEBOOK_FILE);
+      if (file?.url) {
+        const dlRes = await fetch(file.url, { headers: { Authorization: basicAuth() } });
+        if (dlRes.ok) {
+          const nb = await dlRes.json() as { cells?: unknown[] };
+          const injectCell = {
+            cell_type: "code",
+            source: [
+              "import os\n",
+              `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
+              `print('[trigger] RUN_ID injected: ${runId}')\n`,
+            ],
+            metadata: {},
+            outputs: [],
+            execution_count: null,
+          };
+          nb.cells = [injectCell, ...(nb.cells ?? [])];
+          return JSON.stringify(nb);
+        }
+      }
+    }
+  } catch {
+  }
 
-  const notebookSource = JSON.stringify({
+  return JSON.stringify({
     cells: [
       {
         cell_type: "code",
         source: [
-          `import os\n`,
-          `os.environ["RUN_ID_OVERRIDE"] = "${runId}"\n`,
-          `print(f"[trigger] injected RUN_ID={runId}")\n`,
+          "import os, sys\n",
+          `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
+          "sys.path.insert(0, '/kaggle/input/s2s-pipline-v2-0-2')\n",
+          "exec(open('/kaggle/input/s2s-pipline-v2-0-2/session_cpu_collect.ipynb').read())\n",
         ],
         metadata: {},
         outputs: [],
@@ -56,10 +90,15 @@ async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> 
     nbformat: 4,
     nbformat_minor: 4,
   });
+}
+
+async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> {
+  const notebookText = await getNotebookText(runId);
+  const kernelTitle  = `cpu-collect-${runId.replace(/_/g, "-")}`;
 
   const payload = {
-    newTitle:               `${SESSION_TYPE}-${runId}`,
-    text:                   notebookSource,
+    newTitle:               kernelTitle,
+    text:                   notebookText,
     language:               "python",
     kernelType:             "notebook",
     isPrivate:              true,
@@ -76,7 +115,7 @@ async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> 
     method: "POST",
     headers: {
       "Content-Type":  "application/json",
-      "Authorization": `Basic ${credentials}`,
+      "Authorization": basicAuth(),
     },
     body: JSON.stringify(payload),
   });
@@ -87,20 +126,20 @@ async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> 
   }
 
   const data = await res.json() as { ref?: string; error?: string };
+  if (data.error) throw new Error(`Kaggle error: ${data.error}`);
 
-  if (data.error) {
-    throw new Error(`Kaggle error: ${data.error}`);
-  }
+  const raw  = data.ref ?? `${KAGGLE_USERNAME}/${kernelTitle}`;
+  const slug = raw.replace(/^\/+/, "");
 
-  return { kernelSlug: data.ref ?? `${KAGGLE_USERNAME}/${SESSION_TYPE}-${runId}` };
+  return { kernelSlug: slug };
 }
 
 export async function GET(): Promise<NextResponse> {
   return NextResponse.json({
-    kaggle_username: process.env.KAGGLE_USERNAME ?? "NOT SET",
+    kaggle_username:   process.env.KAGGLE_USERNAME ?? "NOT SET",
     kaggle_key_length: process.env.KAGGLE_KEY?.length ?? 0,
     kaggle_key_prefix: process.env.KAGGLE_KEY?.slice(0, 6) ?? "NOT SET",
-    cf_worker_url: process.env.CF_WORKER_URL ?? "NOT SET",
+    cf_worker_url:     process.env.CF_WORKER_URL ?? "NOT SET",
   });
 }
 
@@ -134,7 +173,7 @@ export async function POST(): Promise<NextResponse> {
     );
   }
 
-  const kaggleUrl = `https://www.kaggle.com/${kernelSlug}`;
+  const kaggleUrl = `https://www.kaggle.com/code/${kernelSlug}`;
 
   return NextResponse.json({
     ok:          true,
