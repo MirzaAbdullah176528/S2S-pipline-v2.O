@@ -54,7 +54,7 @@ async function getNotebookText(runId: string): Promise<string> {
             source: [
               "import os\n",
               `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
-              `print('[trigger] RUN_ID injected: ${runId}')\n`,
+              `print(f'[trigger] RUN_ID injected: ${runId}')\n`,
             ],
             metadata: {},
             outputs: [],
@@ -173,7 +173,9 @@ export async function POST(): Promise<NextResponse> {
     );
   }
 
-  const kaggleUrl = `https://www.kaggle.com/code/${kernelSlug}`;
+  const kaggleUrl = kernelSlug.startsWith("code/")
+  ? `https://www.kaggle.com/${kernelSlug}`
+  : `https://www.kaggle.com/code/${kernelSlug}`;
 
   return NextResponse.json({
     ok:          true,
