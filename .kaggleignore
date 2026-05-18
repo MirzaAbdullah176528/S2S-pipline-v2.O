@@ -1,0 +1,6 @@
+.env.template
+.git/
+.github/
+.gitignore
+__pycache__/
+*.pyc

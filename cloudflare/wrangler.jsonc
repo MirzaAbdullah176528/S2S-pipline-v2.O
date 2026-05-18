@@ -16,9 +16,9 @@
       "binding": "DB",
       "database_name": "urdu-s2s-state",
       // Replace with your actual D1 database_id after: wrangler d1 create urdu-s2s-state
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
-      "migrations_dir": "migrations",
-    },
+      "database_id": "4f776818-c7b2-4f06-a066-d52530fb11d7",
+      "migrations_dir": "migrations"
+    }
   ],
 
   // ── Queues ─────────────────────────────────────────────────────────────────
@@ -26,14 +26,14 @@
     "producers": [
       {
         "queue": "urdu-s2s-tasks",
-        "binding": "TASK_QUEUE",
-      },
-    ],
+        "binding": "TASK_QUEUE"
+      }
+    ]
   },
 
   // ── Cron Triggers (lease reclaim every 5 min + CB cooldown reset) ──────────
   "triggers": {
-    "crons": ["*/5 * * * *"],
+    "crons": ["*/5 * * * *"]
   },
 
   // ── Environment Variables (non-secret) ─────────────────────────────────────
@@ -42,7 +42,7 @@
     "ENVIRONMENT": "production",
     "P1B_MAX_GLOBAL": "6",
     "LEASE_TTL_SECONDS": "600",
-    "MAX_CB_WRITES_PER_MIN": "12",
+    "MAX_CB_WRITES_PER_MIN": "12"
   },
 
   // ── Observability ──────────────────────────────────────────────────────────
@@ -50,7 +50,7 @@
     "enabled": true,
     "logs": {
       "invocation_logs": true,
-      "head_sampling_rate": 1,
-    },
-  },
+      "head_sampling_rate": 1
+    }
+  }
 }

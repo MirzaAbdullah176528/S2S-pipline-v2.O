@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 export interface Env {
   DB: D1Database;
   WORKER_SECRET: string;
