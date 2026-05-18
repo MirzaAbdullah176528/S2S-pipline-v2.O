@@ -1,0 +1,345 @@
+# =============================================================================
+# Urdu S2S Pipeline — Intent Taxonomy
+# =============================================================================
+# Defines the intent classification taxonomy used by p2a_label for Gemini-based
+# labeling of 300K sampled segments. Each domain has a set of intent classes,
+# each with a description, example utterances (Urdu + romanized), and metadata.
+# =============================================================================
+
+domains:
+  banking:
+    display_name: "بینکنگ / Banking"
+    description: "Banking and financial services conversations"
+    intents:
+      check_balance:
+        label_en: "Check Account Balance"
+        label_ur: "بیلنس چیک"
+        description: "Customer wants to check their account balance"
+        examples:
+          - "میرا بیلنس کیا ہے"
+          - "اکاؤنٹ میں کتنا پیسہ ہے"
+          - "بیلنس بتائیں"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "banking_get_balance"
+
+      transfer_money:
+        label_en: "Transfer Money"
+        label_ur: "رقم منتقل"
+        description: "Customer wants to transfer money to another account"
+        examples:
+          - "مجھے پیسے بھیجنے ہیں"
+          - "دوسرے اکاؤنٹ میں رقم بھیجنی ہے"
+          - "فنڈ ٹرانسفر کرنا ہے"
+        difficulty: medium
+        requires_tool: true
+        suggested_tool: "banking_transfer"
+
+      block_card:
+        label_en: "Block/Lost Card"
+        label_ur: "کارڈ بلاک"
+        description: "Customer wants to block a lost or stolen card"
+        examples:
+          - "میرا کارڈ گم ہو گیا ہے"
+          - "کارڈ بلاک کر دو"
+          - "ای ٹی ایم کارڈ چوری ہو گیا"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "banking_block_card"
+
+      loan_inquiry:
+        label_en: "Loan Inquiry"
+        label_ur: "قرضہ استفسار"
+        description: "Customer asks about loan products or status"
+        examples:
+          - "مجھے قرضہ چاہیے"
+          - "لون کی شرائط کیا ہیں"
+          - "ہوم لون کی معلومات دیں"
+        difficulty: hard
+        requires_tool: true
+        suggested_tool: "banking_loan_info"
+
+      statement_request:
+        label_en: "Request Bank Statement"
+        label_ur: "اسٹیٹمنٹ درخواست"
+        description: "Customer requests account statement or transaction history"
+        examples:
+          - "مجھے بینک اسٹیٹمنٹ چاہیے"
+          - "ٹرانزیکشن ہسٹری بھیجیں"
+          - "کھاتے کی تفصیلات دیں"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "banking_get_statement"
+
+      complaint:
+        label_en: "File Complaint"
+        label_ur: "شکایت درج"
+        description: "Customer wants to register a complaint about service or transaction"
+        examples:
+          - "مجھے شکایت درج کرانی ہے"
+          - "غیر مجاز ٹرانزیکشن ہوئی ہے"
+          - "سروس خراب ہے"
+        difficulty: hard
+        requires_tool: true
+        suggested_tool: "banking_file_complaint"
+
+      exchange_rate:
+        label_en: "Exchange Rate Inquiry"
+        label_ur: "شرح تبادلہ"
+        description: "Customer asks about currency exchange rates"
+        examples:
+          - "ڈالر کا ریٹ کیا ہے"
+          - "کرنسی ایکسچینج ریٹ بتائیں"
+          - "پاؤنڈ کتنا مل رہا ہے"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "banking_exchange_rate"
+
+  healthcare:
+    display_name: "صحت / Healthcare"
+    description: "Healthcare and medical appointment conversations"
+    intents:
+      book_appointment:
+        label_en: "Book Appointment"
+        label_ur: "اپائنٹمنٹ بک"
+        description: "Patient wants to book a doctor's appointment"
+        examples:
+          - "مجھے ڈاکٹر کی اپائنٹمنٹ چاہیے"
+          - "کل ڈاکٹر کو دکھانا ہے"
+          - "اپائنٹمنٹ لے سکتا ہوں"
+        difficulty: medium
+        requires_tool: true
+        suggested_tool: "healthcare_book_appointment"
+
+      prescription_refill:
+        label_en: "Prescription Refill"
+        label_ur: "دوا کی تجدید"
+        description: "Patient wants to refill a prescription"
+        examples:
+          - "میری دوائی ختم ہو گئی ہے"
+          - "پریسکرپشن ریفل کرنا ہے"
+          - "دوا کی نئی بوتل چاہیے"
+        difficulty: medium
+        requires_tool: true
+        suggested_tool: "healthcare_prescription_refill"
+
+      test_results:
+        label_en: "Get Test Results"
+        label_ur: "ٹیسٹ نتائج"
+        description: "Patient asks about lab test results"
+        examples:
+          - "میرے ٹیسٹ کے نتائج آئے ہیں"
+          - "لیب رپورٹ کب آئے گی"
+          - "خون کی رپورٹ دیکھنی ہے"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "healthcare_get_results"
+
+      insurance_query:
+        label_en: "Insurance Query"
+        label_ur: "انشورنس استفسار"
+        description: "Patient asks about health insurance coverage"
+        examples:
+          - "کیا یہ انشورنس میں شامل ہے"
+          - "انشورنس کلیم کیسے کریں"
+          - "ہیلتھ انشورنس کوریج بتائیں"
+        difficulty: hard
+        requires_tool: true
+        suggested_tool: "healthcare_insurance_info"
+
+      emergency:
+        label_en: "Medical Emergency"
+        label_ur: "ہنگامی صورتحال"
+        description: "Caller reports a medical emergency requiring immediate help"
+        examples:
+          - " ایمبولینس بھیجیں"
+          - "ہنگامی مدد چاہیے"
+          - "مریض کی حالت خراب ہے"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "healthcare_emergency"
+
+      doctor_availability:
+        label_en: "Doctor Availability"
+        label_ur: "ڈاکٹر کی دستیابی"
+        description: "Patient asks when a specific doctor is available"
+        examples:
+          - "ڈاکٹر احمد کب آئیں گے"
+          - "کارڈیالوجسٹ کا ٹائم کیا ہے"
+          - "کون سا ڈاکٹر آج موجود ہے"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "healthcare_doctor_schedule"
+
+  education:
+    display_name: "تعلیم / Education"
+    description: "Education and academic services conversations"
+    intents:
+      course_info:
+        label_en: "Course Information"
+        label_ur: "کورس معلومات"
+        description: "Student asks about available courses or programs"
+        examples:
+          - "کون سے کورسز available ہیں"
+          - "کمپیوٹر سائنس کا کورس بتائیں"
+          - "ایڈمیشن کب ہیں"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "education_course_info"
+
+      enrollment:
+        label_en: "Enrollment"
+        label_ur: "داخلہ"
+        description: "Student wants to enroll in a course or program"
+        examples:
+          - "مجھے داخلہ لینا ہے"
+          - "رجسٹریشن کیسے ہوگی"
+          - "فارم بھرنا ہے"
+        difficulty: medium
+        requires_tool: true
+        suggested_tool: "education_enroll"
+
+      fee_inquiry:
+        label_en: "Fee Inquiry"
+        label_ur: "فیس استفسار"
+        description: "Student asks about tuition fees or payment"
+        examples:
+          - "فیس کتنی ہے"
+          - "کیا قسطوں میں ادا کر سکتے ہیں"
+          - "اسکالرشپ کی معلومات دیں"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "education_fee_info"
+
+      results_transcript:
+        label_en: "Results/Transcript"
+        label_ur: "نتائج / ٹرانسکرپٹ"
+        description: "Student asks about exam results or academic transcript"
+        examples:
+          - "نتائج کب آئیں گے"
+          - "ٹرانسکرپٹ چاہیے"
+          - "گزٹ دیکھنی ہے"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "education_get_results"
+
+      library_access:
+        label_en: "Library Access"
+        label_ur: "لائبریری رسائی"
+        description: "Student needs library access or resource information"
+        examples:
+          - "لائبریری کا وقت کیا ہے"
+          - "آن لائن لائبریری کیسے استعمال کریں"
+          - "کتاب کہاں ملے گی"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "education_library_info"
+
+  restaurant:
+    display_name: "ریسٹورنٹ / Restaurant"
+    description: "Restaurant ordering and reservation conversations"
+    intents:
+      make_reservation:
+        label_en: "Make Reservation"
+        label_ur: "ریزرویشن"
+        description: "Customer wants to reserve a table"
+        examples:
+          - "میں ٹیبل بک کرنا چاہتا ہوں"
+          - "کل رات کے لیے ریزرویشن چاہیے"
+          - "چار افراد کے لیے جگہ چاہیے"
+        difficulty: medium
+        requires_tool: true
+        suggested_tool: "restaurant_reserve_table"
+
+      menu_inquiry:
+        label_en: "Menu Inquiry"
+        label_ur: "مینو استفسار"
+        description: "Customer asks about menu items or availability"
+        examples:
+          - "مینو دیکھنا ہے"
+          - "بریانی دستیاب ہے"
+          - "سبزی والے آئٹمز کون سے ہیں"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "restaurant_get_menu"
+
+      place_order:
+        label_en: "Place Order"
+        label_ur: "آرڈر دیں"
+        description: "Customer wants to place a food order for delivery or takeaway"
+        examples:
+          - "مجھے آرڈر کرنا ہے"
+          - "ہوم ڈیلیوری چاہیے"
+          - "دو بریانی اور ایک نان بھیجیں"
+        difficulty: medium
+        requires_tool: true
+        suggested_tool: "restaurant_place_order"
+
+      order_status:
+        label_en: "Order Status"
+        label_ur: "آرڈر حالت"
+        description: "Customer asks about the status of their order"
+        examples:
+          - "میرا آرڈر کہاں ہے"
+          - "کب تک پہنچے گا"
+          - "آرڈر کیٹر ہو گیا ہے"
+        difficulty: easy
+        requires_tool: true
+        suggested_tool: "restaurant_order_status"
+
+      complaint_feedback:
+        label_en: "Complaint/Feedback"
+        label_ur: "شکایت / رائے"
+        description: "Customer provides feedback or complains about food or service"
+        examples:
+          - "کھانا ٹھیک نہیں تھا"
+          - "سروس بہت اچھی تھی"
+          - "ڈیلیوری لیٹ ہوئی"
+        difficulty: hard
+        requires_tool: true
+        suggested_tool: "restaurant_file_feedback"
+
+      special_request:
+        label_en: "Special Dietary Request"
+        label_ur: "خصوصی درخواست"
+        description: "Customer has special dietary needs or customization"
+        examples:
+          - "ہلکی کھانا چاہتا ہوں"
+          - "بغیر گلوٹن آپشن ہے"
+          - "الرجی کی وجہ سے مچھلی نہیں کھا سکتا"
+        difficulty: hard
+        requires_tool: true
+        suggested_tool: "restaurant_special_request"
+
+# Cross-domain intents (applicable to all domains)
+cross_domain:
+  greeting:
+    label_en: "Greeting"
+    label_ur: "سلام"
+    description: "General greeting or opening exchange"
+    requires_tool: false
+
+  goodbye:
+    label_en: "Goodbye/Closing"
+    label_ur: "خدا حافظ"
+    description: "Closing or ending the conversation"
+    requires_tool: false
+
+  clarification:
+    label_en: "Ask for Clarification"
+    label_ur: "وضاحت"
+    description: "Speaker asks the other party to repeat or clarify"
+    requires_tool: false
+
+  small_talk:
+    label_en: "Small Talk"
+    label_ur: "general گفتگو"
+    description: "Off-topic or social conversation"
+    requires_tool: false
+
+  escalation:
+    label_en: "Request Human Agent"
+    label_ur: "انسانی ایجنٹ"
+    description: "Customer asks to speak with a human representative"
+    requires_tool: true
+    suggested_tool: "transfer_to_human"

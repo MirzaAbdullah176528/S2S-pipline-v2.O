@@ -1,0 +1,80 @@
+# =============================================================================
+# Urdu S2S Pipeline — Hugging Face Dataset Repository Map
+# =============================================================================
+# Each entry maps a pipeline stage key to an HF org/repo ID.
+# Tokens: PRIMARY, SECONDARY, TERTIARY correspond to the three HF write tokens.
+# All notebooks read this file at cell 3 to resolve target repos.
+# Access pattern: repos_cfg['repos']['stage0_codec']['repo_id']
+# =============================================================================
+
+repos:
+  stage0_codec:
+    repo_id: "urdu-s2s/stage0-codec"
+    token: PRIMARY
+    description: "Raw WAV 24kHz/16-bit + metadata Parquet shards (~345 GB at 10Kh)"
+    subdirs:
+      - "audio/"
+      - "metadata/"
+
+  overflow:
+    repo_id: "urdu-s2s/overflow-stage0"
+    token: TERTIARY
+    description: "stage0 overflow when PRIMARY repo exceeds 250GB local counter (~50-100 GB)"
+    subdirs:
+      - "audio/"
+      - "metadata/"
+
+  stage1_ce:
+    repo_id: "urdu-s2s/stage1-ce"
+    token: PRIMARY
+    description: "Mimi codec tokens (.npy per segment) + intent labels Parquet (~140 GB)"
+    subdirs:
+      - "tokens/"
+      - "labels/"
+
+  stage2_moe:
+    repo_id: "urdu-s2s/stage2-moe"
+    token: SECONDARY
+    description: "Seed dialogues + augmented variants JSONL (~800 MB)"
+    subdirs:
+      - "seeds/"
+      - "augmented/"
+
+  stage3_agent:
+    repo_id: "urdu-s2s/stage3-agent"
+    token: SECONDARY
+    description: "Agent episode JSONL (~1.2 GB)"
+    subdirs:
+      - "episodes/"
+      - "dummy_env/"
+      - "tools/"
+
+  stage45_e2e:
+    repo_id: "urdu-s2s/stage45-e2e"
+    token: SECONDARY
+    description: "Aligned WAV/text pairs + MMS-TTS checkpoint in checkpoints/ subfolder (~50 GB)"
+    subdirs:
+      - "audio/"
+      - "aligned/"
+      - "checkpoints/"
+
+  # Per-domain repos for domain-sharded synthesis output
+  domain_restaurant:
+    repo_id: "urdu-s2s/domain-restaurant"
+    token: SECONDARY
+    description: "Restaurant domain episodes and synthesis"
+
+  domain_banking:
+    repo_id: "urdu-s2s/domain-banking"
+    token: SECONDARY
+    description: "Banking domain episodes and synthesis"
+
+  domain_healthcare:
+    repo_id: "urdu-s2s/domain-healthcare"
+    token: SECONDARY
+    description: "Healthcare domain episodes and synthesis"
+
+  domain_education:
+    repo_id: "urdu-s2s/domain-education"
+    token: SECONDARY
+    description: "Education domain episodes and synthesis"

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getHealth, getSessions, getRun, formatElapsed, sessionTypeLabel } from "@/lib/cf";
 import type { SessionRow, RunStageRow } from "@/lib/cf";
+import TriggerButton from "@/component/TriggerButton";
 
 const RUN_ID = process.env.DEFAULT_RUN_ID ?? "run_default";
 
@@ -213,6 +214,8 @@ export default function DashboardPage() {
           Live status — refreshes every 10s via Next.js cache revalidation
         </p>
       </header>
+
+      <TriggerButton />
 
       <Suspense fallback={<p style={{ color: "var(--text-dim)" }}>Loading health…</p>}>
         <HealthCard />
