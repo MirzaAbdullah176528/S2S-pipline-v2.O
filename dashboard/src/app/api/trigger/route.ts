@@ -115,6 +115,14 @@ async function pushKaggleKernel(runId: string): Promise<{ kernelSlug: string }> 
     competitionDataSources: [],
     kernelDataSources:      [],
     categoryIds:            [],
+    enableCustomSecret:     true,
+    secrets:                [
+      { key: "CF_WORKER_URL",      value: process.env.CF_WORKER_URL      ?? "" },
+      { key: "CF_WORKER_SECRET",   value: process.env.CF_WORKER_SECRET   ?? "" },
+      { key: "HF_TOKEN_PRIMARY",   value: process.env.HF_TOKEN_PRIMARY   ?? "" },
+      { key: "HF_TOKEN_SECONDARY", value: process.env.HF_TOKEN_SECONDARY ?? "" },
+      { key: "HF_TOKEN_TERTIARY",  value: process.env.HF_TOKEN_TERTIARY  ?? "" },
+    ],
   };
 
   const res = await fetch("https://www.kaggle.com/api/v1/kernels/push", {
