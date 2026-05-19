@@ -79,6 +79,11 @@ async function getNotebookText(runId: string): Promise<string> {
         source: [
           "import os, sys, json\n",
           `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
+          `os.environ['CF_WORKER_URL'] = '${process.env.CF_WORKER_URL ?? ""}'\n`,
+          `os.environ['CF_WORKER_SECRET'] = '${process.env.CF_WORKER_SECRET ?? ""}'\n`,
+          `os.environ['HF_TOKEN_PRIMARY'] = '${process.env.HF_TOKEN_PRIMARY ?? ""}'\n`,
+          `os.environ['HF_TOKEN_SECONDARY'] = '${process.env.HF_TOKEN_SECONDARY ?? ""}'\n`,
+          `os.environ['HF_TOKEN_TERTIARY'] = '${process.env.HF_TOKEN_TERTIARY ?? ""}'\n`,
           "sys.path.insert(0, '/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2')\n",
           "nb = json.load(open('/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2/session_cpu_collect.ipynb'))\n",
           "src = '\\n'.join(''.join(c['source']) for c in nb['cells'] if c['cell_type']=='code')\n",
