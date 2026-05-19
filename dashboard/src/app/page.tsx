@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { getHealth, getSessions, getRun, formatElapsed, sessionTypeLabel } from "@/lib/cf";
 import type { SessionRow, RunStageRow } from "@/lib/cf";
-import TriggerButton from "@/component/TriggerButton";
+import TriggerButton from "@/components/TriggerButton";
 import React from "react";
 
 const RUN_ID = process.env.DEFAULT_RUN_ID ?? "run_default";

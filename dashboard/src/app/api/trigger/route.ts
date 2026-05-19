@@ -79,8 +79,8 @@ async function getNotebookText(runId: string): Promise<string> {
         source: [
           "import os, sys\n",
           `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
-          "sys.path.insert(0, '/kaggle/input/s2s-pipline-v2-0-2')\n",
-          "exec(open('/kaggle/input/s2s-pipline-v2-0-2/session_cpu_collect.ipynb').read())\n",
+          "sys.path.insert(0, '/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2')\n",
+          "exec(open('/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2/session_cpu_collect.ipynb').read())\n",
         ],
         metadata: {},
         outputs: [],
