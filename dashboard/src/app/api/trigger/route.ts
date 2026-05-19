@@ -77,10 +77,12 @@ async function getNotebookText(runId: string): Promise<string> {
       {
         cell_type: "code",
         source: [
-          "import os, sys\n",
+          "import os, sys, json\n",
           `os.environ['RUN_ID_OVERRIDE'] = '${runId}'\n`,
           "sys.path.insert(0, '/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2')\n",
-          "exec(open('/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2/session_cpu_collect.ipynb').read())\n",
+          "nb = json.load(open('/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2/session_cpu_collect.ipynb'))\n",
+          "src = '\\n'.join(''.join(c['source']) for c in nb['cells'] if c['cell_type']=='code')\n",
+          "exec(src, {'__name__': '__main__'})\n",
         ],
         metadata: {},
         outputs: [],
@@ -190,3 +192,4 @@ export async function POST(): Promise<NextResponse> {
     kaggle_url:  kaggleUrl,
   });
 }
+
