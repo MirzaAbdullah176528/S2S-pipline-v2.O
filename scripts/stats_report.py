@@ -187,7 +187,7 @@ def fetch_hf_repo_stats(secrets: dict) -> dict:
     }
 
     stats = {}
-    for stage_key, info in repos_config.items():
+    for stage_key, info in repos_config.get('repos', {}).items():
         repo_id = info.get("repo_id")
         token_key = info.get("token", "PRIMARY")
         token = token_map.get(token_key)

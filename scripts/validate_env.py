@@ -294,7 +294,7 @@ def check_huggingface(report: ValidationReport, secrets: dict):
         "TERTIARY": secrets.get("HF_TOKEN_TERTIARY"),
     }
 
-    for stage_key, info in repos_config.items():
+    for stage_key, info in repos_config.get('repos', {}).items():
         repo_id = info.get("repo_id")
         token_key = info.get("token", "PRIMARY")
         token = token_map.get(token_key)
