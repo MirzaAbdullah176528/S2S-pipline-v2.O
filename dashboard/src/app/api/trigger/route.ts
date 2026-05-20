@@ -88,6 +88,7 @@ async function getNotebookText(runId: string): Promise<string> {
           `os.environ['GEMINI_API_KEY_02'] = '${process.env.GEMINI_API_KEY_02 ?? ""}'\n`,
           `os.environ['GEMINI_API_KEY_03'] = '${process.env.GEMINI_API_KEY_03 ?? ""}'\n`,
           `os.environ['GEMINI_API_KEY_04'] = '${process.env.GEMINI_API_KEY_04 ?? ""}'\n`,
+          `os.environ['GEMINI_API_KEY'] = '${process.env.GEMINI_API_KEY_01 ?? ""}'\n`,
           "sys.path.insert(0, '/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2')\n",
           "nb = json.load(open('/kaggle/input/datasets/mirza176528/s2s-pipline-v2-0-2/session_cpu_collect.ipynb'))\n",
           "src = '\\n'.join(''.join(c['source']) for c in nb['cells'] if c['cell_type']=='code')\n",
