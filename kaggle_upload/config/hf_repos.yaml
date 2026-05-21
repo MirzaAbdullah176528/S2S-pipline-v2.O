@@ -9,7 +9,7 @@
 
 repos:
   stage0_codec:
-    repo_id: "urdu-s2s/stage0-codec"
+    repo_id: "MessAgentix/stage0-codec"
     token: PRIMARY
     description: "Raw WAV 24kHz/16-bit + metadata Parquet shards (~345 GB at 10Kh)"
     subdirs:
@@ -17,7 +17,7 @@ repos:
       - "metadata/"
 
   overflow:
-    repo_id: "urdu-s2s/overflow-stage0"
+    repo_id: "MessAgentix/overflow-stage0"
     token: TERTIARY
     description: "stage0 overflow when PRIMARY repo exceeds 250GB local counter (~50-100 GB)"
     subdirs:
@@ -25,7 +25,7 @@ repos:
       - "metadata/"
 
   stage1_ce:
-    repo_id: "urdu-s2s/stage1-ce"
+    repo_id: "MessAgentix/stage1-ce"
     token: PRIMARY
     description: "Mimi codec tokens (.npy per segment) + intent labels Parquet (~140 GB)"
     subdirs:
@@ -33,7 +33,7 @@ repos:
       - "labels/"
 
   stage2_moe:
-    repo_id: "urdu-s2s/stage2-moe"
+    repo_id: "MessAgentix/stage2-moe"
     token: SECONDARY
     description: "Seed dialogues + augmented variants JSONL (~800 MB)"
     subdirs:
@@ -41,7 +41,7 @@ repos:
       - "augmented/"
 
   stage3_agent:
-    repo_id: "urdu-s2s/stage3-agent"
+    repo_id: "MessAgentix/stage3-agent"
     token: SECONDARY
     description: "Agent episode JSONL (~1.2 GB)"
     subdirs:
@@ -50,7 +50,7 @@ repos:
       - "tools/"
 
   stage45_e2e:
-    repo_id: "urdu-s2s/stage45-e2e"
+    repo_id: "MessAgentix/stage45-e2e"
     token: SECONDARY
     description: "Aligned WAV/text pairs + MMS-TTS checkpoint in checkpoints/ subfolder (~50 GB)"
     subdirs:
@@ -60,21 +60,21 @@ repos:
 
   # Per-domain repos for domain-sharded synthesis output
   domain_restaurant:
-    repo_id: "urdu-s2s/domain-restaurant"
+    repo_id: "MessAgentix/domain-restaurant"
     token: SECONDARY
     description: "Restaurant domain episodes and synthesis"
 
   domain_banking:
-    repo_id: "urdu-s2s/domain-banking"
+    repo_id: "MessAgentix/domain-banking"
     token: SECONDARY
     description: "Banking domain episodes and synthesis"
 
   domain_healthcare:
-    repo_id: "urdu-s2s/domain-healthcare"
+    repo_id: "MessAgentix/domain-healthcare"
     token: SECONDARY
     description: "Healthcare domain episodes and synthesis"
 
   domain_education:
-    repo_id: "urdu-s2s/domain-education"
+    repo_id: "MessAgentix/domain-education"
     token: SECONDARY
     description: "Education domain episodes and synthesis"

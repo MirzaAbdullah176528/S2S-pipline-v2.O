@@ -9,7 +9,7 @@
 
 repos:
   stage0_codec:
-    repo_id: "urdu-s2s/stage0-codec"
+    repo_id: "MessAgentix/stage0-codec"
     token: PRIMARY
     description: "Raw WAV 24kHz/16-bit + metadata Parquet shards (~345 GB at 10Kh)"
     subdirs:
