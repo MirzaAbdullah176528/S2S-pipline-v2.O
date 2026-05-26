@@ -15,7 +15,7 @@ const CB_CONFIGS: Record<string, { openThreshold: number; windowSec: number; ini
 
   youtube:{ 
     openThreshold: 5, 
-    windowSec: 60,  
+    windowSec: 60,
     initBackoffSec: 120,  
     maxBackoffSec: 1800 
     },

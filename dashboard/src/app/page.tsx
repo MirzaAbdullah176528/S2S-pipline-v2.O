@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { getHealth, getSessions, getRun, formatElapsed, sessionTypeLabel } from "@/lib/cf";
 import type { SessionRow, RunStageRow } from "@/lib/cf";
-import TriggerButton from "@/components/TriggerButton";
+import SessionLaunchForm from "@/components/SessionLaunchForm";
 import React from "react";
 
 const RUN_ID = process.env.DEFAULT_RUN_ID ?? "run_default";
@@ -15,9 +15,6 @@ function StatusDot({ alive }: { alive: boolean }) {
       marginRight: 7, flexShrink: 0,
     }} />
   );
-}
-function add(){
-  
 }
 function Badge({ label, color }: { label: string; color: string }) {
   return (
@@ -218,7 +215,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <TriggerButton />
+      <SessionLaunchForm />
 
       <Suspense fallback={<p style={{ color: "var(--text-dim)" }}>Loading health…</p>}>
         <HealthCard />
