@@ -135,7 +135,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "PRIMARY",
     description: "Raw WAV 24kHz/16-bit + metadata Parquet shards (~345 GB at 10Kh)",
     subdirs: ["audio/", "metadata/"],
-    recommendedFor: ["cpu_collect"],
+    recommendedFor: ["cpu_collect", "cpu_clean"],
   },
   {
     id: "overflow",
@@ -159,7 +159,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "SECONDARY",
     description: "Seed dialogues + augmented variants JSONL (~800 MB)",
     subdirs: ["seeds/", "augmented/"],
-    recommendedFor: ["cpu_label"],
+    recommendedFor: ["cpu_label", "cpu_dialogue"],
   },
   {
     id: "stage3_agent",
@@ -167,7 +167,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "SECONDARY",
     description: "Agent episode JSONL (~1.2 GB)",
     subdirs: ["episodes/", "dummy_env/", "tools/"],
-    recommendedFor: ["tpu_synth"],
+    recommendedFor: ["cpu_episodes", "tpu_synth"],
   },
   {
     id: "stage45_e2e",
@@ -183,7 +183,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "SECONDARY",
     description: "Restaurant domain episodes and synthesis",
     subdirs: [],
-    recommendedFor: ["tpu_synth"],
+    recommendedFor: ["cpu_episodes", "tpu_synth"],
   },
   {
     id: "domain_banking",
@@ -191,7 +191,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "SECONDARY",
     description: "Banking domain episodes and synthesis",
     subdirs: [],
-    recommendedFor: ["tpu_synth"],
+    recommendedFor: ["cpu_episodes", "tpu_synth"],
   },
   {
     id: "domain_healthcare",
@@ -199,7 +199,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "SECONDARY",
     description: "Healthcare domain episodes and synthesis",
     subdirs: [],
-    recommendedFor: ["tpu_synth"],
+    recommendedFor: ["cpu_episodes", "tpu_synth"],
   },
   {
     id: "domain_education",
@@ -207,7 +207,7 @@ export const HF_REPOS: HfRepo[] = [
     token: "SECONDARY",
     description: "Education domain episodes and synthesis",
     subdirs: [],
-    recommendedFor: ["tpu_synth"],
+    recommendedFor: ["cpu_episodes", "tpu_synth"],
   },
 ];
 
@@ -225,7 +225,8 @@ export interface SessionConfig {
   id: string;                 // matches session_type in the worker DB
   label: string;              // human-readable name
   notebookFile: string;       // notebook filename in the Kaggle dataset
-  stages: string[];           // pipeline stages this session runs
+  stages: string[];           // pipeline stages this session runs (e.g. ["p1a", "p1b", "p1e"])
+  stageLabel: string;         // short pipeline stage badge (e.g. "P1: Collect")
   description: string;        // what this session does
   compatibleDevices: string[];// runtime device IDs this session can use
   recommendedDevice: string;  // recommended device for best performance
@@ -244,6 +245,7 @@ export const SESSIONS: SessionConfig[] = [
     label: "Data Collection (CPU)",
     notebookFile: "session_cpu_collect.ipynb",
     stages: ["p1a", "p1b", "p1e"],
+    stageLabel: "P1: Collect",
     description:
       "Discovers YouTube sources, downloads raw audio, validates SNR, and uploads WAV shards + metadata to the stage0-codec Hugging Face repository. This is the data ingestion entry point for the entire pipeline.",
     compatibleDevices: ["cpu"],
@@ -268,10 +270,38 @@ export const SESSIONS: SessionConfig[] = [
     estimatedRamGb: 4,
   },
   {
+    id: "cpu_clean",
+    label: "Audio Cleaning & Segmentation (CPU)",
+    notebookFile: "session_cpu_clean.ipynb",
+    stages: ["p1c"],
+    stageLabel: "P1c: Clean (CPU)",
+    description:
+      "Runs VAD-based speech segmentation, SNR filtering, loudness normalization, and language detection on downloaded audio. Produces clean 3-15 second speech segments ready for GPU Demucs cleaning or direct encoding. Flagged low-SNR segments are separated for potential GPU source separation.",
+    compatibleDevices: ["cpu"],
+    recommendedDevice: "cpu",
+    outputHfRepos: ["stage0_codec"],
+    inputHfRepos: ["stage0_codec"],
+    requirements: [
+      { category: "api", label: "Kaggle Internet Access", description: "Kernel needs internet to download Silero VAD model and Faster-Whisper weights, and upload segments to Hugging Face.", required: true },
+      { category: "env", label: "HF_TOKEN_PRIMARY", description: "Hugging Face write token for MessAgentix/stage0-codec (segments output).", required: true },
+      { category: "env", label: "CF_WORKER_URL", description: "Cloudflare Worker URL for heartbeat and queue coordination.", required: true },
+      { category: "env", label: "CF_WORKER_SECRET", description: "Authentication secret for the Cloudflare Worker API.", required: true },
+      { category: "data", label: "stage0_codec standardized audio", description: "Standardized WAV files from cpu_collect (p1b) must exist in MessAgentix/stage0-codec.", required: true, detail: "Run cpu_collect first to download and standardize raw audio." },
+      { category: "resource", label: "Disk Space: ~20 GB", description: "Temporary storage for audio download, VAD segments, and flagged output before upload.", required: true },
+      { category: "resource", label: "RAM: ~8 GB", description: "Faster-Whisper tiny model + Silero VAD + audio processing. More RAM helps with long audio files.", required: false },
+      { category: "config", label: "VAD & Whisper Auto-Download", description: "Silero VAD and Faster-Whisper tiny model are auto-downloaded on first run. Ensure internet access is enabled.", required: true },
+    ],
+    sessionMaxHours: 9,
+    enableInternet: true,
+    estimatedDiskGb: 20,
+    estimatedRamGb: 8,
+  },
+  {
     id: "cpu_label",
     label: "Data Labeling (CPU)",
     notebookFile: "session_cpu_label.ipynb",
     stages: ["p2a"],
+    stageLabel: "P2a: Label",
     description:
       "Labels intent classes for collected transcripts using the Gemini API. Reads raw metadata from stage0-codec and produces labeled datasets for the MoE dialogue generation stage. Also generates seed dialogues for stage2-moe.",
     compatibleDevices: ["cpu"],
@@ -302,6 +332,7 @@ export const SESSIONS: SessionConfig[] = [
     label: "Data Cleaning (GPU)",
     notebookFile: "session_gpu_clean.ipynb",
     stages: ["p1d"],
+    stageLabel: "P1d: Clean (GPU)",
     description:
       "Runs Demucs source separation on downloaded audio to isolate speech from background noise. Requires a GPU (T4 or better) for real-time inference. Outputs cleaned audio segments back to the stage0-codec repository.",
     compatibleDevices: ["gpu_t4", "gpu_t4_highmem", "gpu_p100", "gpu_l4", "gpu_a100"],
@@ -329,6 +360,7 @@ export const SESSIONS: SessionConfig[] = [
     label: "Data Encoding (GPU)",
     notebookFile: "session_gpu_encode.ipynb",
     stages: ["p2b"],
+    stageLabel: "P2b: Encode",
     description:
       "Encodes audio segments into Mimi codec tokens using the Kyutai Moshi tokenizer. Also runs Whisper for transcription confidence scoring. Requires a GPU for real-time codec encoding and transcription.",
     compatibleDevices: ["gpu_p100", "gpu_t4", "gpu_t4_highmem", "gpu_l4", "gpu_a100"],
@@ -352,10 +384,71 @@ export const SESSIONS: SessionConfig[] = [
     estimatedRamGb: 16,
   },
   {
+    id: "cpu_dialogue",
+    label: "Dialogue Generation (CPU)",
+    notebookFile: "session_cpu_dialogue.ipynb",
+    stages: ["p3a", "p3b", "p3c"],
+    stageLabel: "P3: Dialogue",
+    description:
+      "Generates seed dialogues using the Gemini API based on labeled intent data, augments them with paraphrasing and slot-filling variations, and uploads the augmented dialogue dataset to the stage2-moe Hugging Face repository. These dialogues serve as the training data for the MoE routing model.",
+    compatibleDevices: ["cpu"],
+    recommendedDevice: "cpu",
+    outputHfRepos: ["stage2_moe"],
+    inputHfRepos: ["stage1_ce", "stage2_moe"],
+    requirements: [
+      { category: "api", label: "Gemini API (at least 1 key)", description: "Used by p3a to generate seed dialogues and p3b for augmentation. Supports key rotation across GEMINI_API_KEY_01 through _04.", required: true, detail: "At least one key must be provided. Multiple keys enable rotation and higher throughput." },
+      { category: "api", label: "Kaggle Internet Access", description: "Kernel needs internet to reach Gemini API and Hugging Face endpoints.", required: true },
+      { category: "env", label: "HF_TOKEN_SECONDARY", description: "Hugging Face write token for MessAgentix/stage2-moe (dialogues output).", required: true },
+      { category: "env", label: "CF_WORKER_URL", description: "Cloudflare Worker URL for heartbeat and queue coordination.", required: true },
+      { category: "env", label: "CF_WORKER_SECRET", description: "Authentication secret for the Cloudflare Worker API.", required: true },
+      { category: "env", label: "GEMINI_API_KEY_01 (or 02/03/04)", description: "At least one Gemini API key for dialogue generation. More keys allow higher QPS via rotation.", required: true },
+      { category: "data", label: "stage1-ce labeled data", description: "Intent-labeled data from cpu_label (p2a) must exist in MessAgentix/stage1-ce.", required: true },
+      { category: "data", label: "stage2-moe seed dialogues (optional)", description: "If resuming, existing seed dialogues in MessAgentix/stage2-moe will be extended rather than overwritten.", required: false },
+      { category: "resource", label: "Disk Space: ~5 GB", description: "Temporary storage for labeled data download and generated dialogue files.", required: true },
+      { category: "resource", label: "RAM: ~4 GB", description: "Light processing — mostly API calls and JSON I/O.", required: false },
+      { category: "config", label: "Intent Taxonomy (intent_taxonomy.yaml)", description: "The intent taxonomy config must exist in the dataset for dialogue generation guidance.", required: true },
+    ],
+    sessionMaxHours: 9,
+    enableInternet: true,
+    estimatedDiskGb: 5,
+    estimatedRamGb: 4,
+  },
+  {
+    id: "cpu_episodes",
+    label: "Agent Episode Generation (CPU)",
+    notebookFile: "session_cpu_episodes.ipynb",
+    stages: ["p4a", "p4b", "p4c"],
+    stageLabel: "P4: Episodes",
+    description:
+      "Builds dummy tool environments for agent simulation, generates agent episodes using the Gemini API with tool-calling patterns, and uploads episodes to the stage3-agent Hugging Face repository. Episodes define the conversation flow, tool invocations, and expected responses for each domain scenario.",
+    compatibleDevices: ["cpu"],
+    recommendedDevice: "cpu",
+    outputHfRepos: ["stage3_agent"],
+    inputHfRepos: ["stage2_moe", "stage3_agent"],
+    requirements: [
+      { category: "api", label: "Gemini API (at least 1 key)", description: "Used by p4b to generate agent episodes with tool-calling patterns. Supports key rotation.", required: true, detail: "At least one key must be provided. Multiple keys enable rotation and higher throughput." },
+      { category: "api", label: "Kaggle Internet Access", description: "Kernel needs internet to reach Gemini API and Hugging Face endpoints.", required: true },
+      { category: "env", label: "HF_TOKEN_SECONDARY", description: "Hugging Face write token for MessAgentix/stage3-agent (episodes output).", required: true },
+      { category: "env", label: "CF_WORKER_URL", description: "Cloudflare Worker URL for heartbeat and queue coordination.", required: true },
+      { category: "env", label: "CF_WORKER_SECRET", description: "Authentication secret for the Cloudflare Worker API.", required: true },
+      { category: "env", label: "GEMINI_API_KEY_01 (or 02/03/04)", description: "At least one Gemini API key for episode generation. More keys allow higher QPS.", required: true },
+      { category: "data", label: "stage2-moe dialogue data", description: "Augmented dialogues from cpu_dialogue (p3a/p3b) must exist in MessAgentix/stage2-moe.", required: true },
+      { category: "data", label: "stage3-agent existing episodes (optional)", description: "If resuming, existing episodes in MessAgentix/stage3-agent will be extended.", required: false },
+      { category: "resource", label: "Disk Space: ~5 GB", description: "Temporary storage for dialogue download and generated episode files.", required: true },
+      { category: "resource", label: "RAM: ~4 GB", description: "Light processing — mostly API calls and JSON I/O.", required: false },
+      { category: "config", label: "Domain Config Available", description: "Domain-specific tool registry and intent taxonomy configs must be in the dataset.", required: true },
+    ],
+    sessionMaxHours: 9,
+    enableInternet: true,
+    estimatedDiskGb: 5,
+    estimatedRamGb: 4,
+  },
+  {
     id: "tpu_finetune",
     label: "Model Fine-tuning (TPU)",
     notebookFile: "session_tpu_finetune.ipynb",
     stages: ["p5_finetune"],
+    stageLabel: "P5: Finetune",
     description:
       "Fine-tunes the Moshi S2S model on TPU using the aligned codec tokens and dialogue data produced by earlier pipeline stages. This is the most resource-intensive session and requires TPU or high-end GPU access.",
     compatibleDevices: ["tpu_v5e", "tpu_vm_v3", "gpu_a100", "gpu_l4"],
@@ -387,6 +480,7 @@ export const SESSIONS: SessionConfig[] = [
     label: "Synthetic Data Generation (TPU)",
     notebookFile: "session_tpu_synth.ipynb",
     stages: ["p5a", "p5b", "p5c"],
+    stageLabel: "P5: Synth",
     description:
       "Runs large-scale speech synthesis using the fine-tuned Moshi model on TPU. Generates domain-specific synthetic conversations across banking, healthcare, restaurant, and education domains. Also handles audio interleaving and final upload to domain-specific HF repositories.",
     compatibleDevices: ["tpu_v5e", "tpu_vm_v3", "gpu_a100", "gpu_l4"],
