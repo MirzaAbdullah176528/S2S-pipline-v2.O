@@ -1,12 +1,3 @@
-# =============================================================================
-# Urdu S2S Pipeline — Hugging Face Dataset Repository Map
-# =============================================================================
-# Each entry maps a pipeline stage key to an HF org/repo ID.
-# Tokens: PRIMARY, SECONDARY, TERTIARY correspond to the three HF write tokens.
-# All notebooks read this file at cell 3 to resolve target repos.
-# Access pattern: repos_cfg['repos']['stage0_codec']['repo_id']
-# =============================================================================
-
 repos:
   stage0_codec:
     repo_id: "MessAgentix/stage0-codec"
