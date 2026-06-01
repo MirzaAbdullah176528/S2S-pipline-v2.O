@@ -32,7 +32,7 @@ class WorkflowKernel:
         cf_worker_secret: str,
         gpu_type: str | None = None,
         vram_limit_gb: float = 0.0,
-        session_max_hours: float = 8.5,
+        session_max_hours: float = 9.0,
     ):
         self.run_id           = run_id
         self.session_id       = session_id

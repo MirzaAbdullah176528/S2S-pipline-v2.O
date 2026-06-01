@@ -16,6 +16,7 @@ OPTIONAL_KEYS = [
     "GEMINI_API_KEY_03",
     "GEMINI_API_KEY_04",
     "PROXY_URL",
+    "PK_PROXY_URL",
 ]
 
 
