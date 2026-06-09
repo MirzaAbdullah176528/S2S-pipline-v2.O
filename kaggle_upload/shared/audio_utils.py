@@ -8,12 +8,17 @@ import numpy as np
 
 TARGET_SR         = 24000
 TARGET_LUFS       = -23.0
-MIN_SEG_SEC       = 3.0
+MIN_SEG_SEC       = 1.5  
 MAX_SEG_SEC       = 15.0
-SNR_PASS          = 20.0
-SNR_FLAG          = 15.0
-WHISPER_CONF_PASS = 0.75
+SNR_PASS          = 12.0  
+SNR_FLAG          = 3.0   
+SNR_REJECT        = 1.5   
+NOISE_PERCENTILE  = 20
+WHISPER_CONF_PASS = 0.65   
 URDU_CHARS        = set("ابپتثجچحخدذرزژسشصضطظعغفقکگلمنوہھیئاآءۃے")
+
+
+AUDIO_EXTENSIONS  = {'.wav', '.flac', '.mp3', '.ogg', '.m4a', '.opus', '.webm', '.aac', '.wma'}
 
 try:
     from urdu_s2s_core import fast_snr_filter
@@ -22,7 +27,9 @@ except ImportError:
     RUST_AVAILABLE = False
 
 
-def compute_snr(audio_array: np.ndarray, frame_length: int = 2048, noise_percentile: int = 10) -> float:
+def compute_snr(audio_array: np.ndarray, frame_length: int = 2048, noise_percentile: int | None = None) -> float:
+    if noise_percentile is None:
+        noise_percentile = NOISE_PERCENTILE
     if len(audio_array) < frame_length:
         return 0.0
     hop    = frame_length // 2
@@ -59,17 +66,40 @@ def standardize_audio(input_path, output_path) -> Path:
     return output_path
 
 
-def normalize_loudness(audio_array: np.ndarray, sr: int = TARGET_SR) -> np.ndarray | None:
+def normalize_loudness(audio_array: np.ndarray, sr: int = TARGET_SR) -> tuple[np.ndarray, bool] | None:
     import pyloudnorm as pyln
     audio_f64 = audio_array.astype(np.float64)
     meter     = pyln.Meter(sr)
     loudness  = meter.integrated_loudness(audio_f64)
+
     if not np.isfinite(loudness):
+        
+        peak = np.max(np.abs(audio_f64))
+        if peak > 1e-6:
+            normalized = audio_f64 * (0.5 / peak)
+            return normalized.astype(np.float32), False
+        
         return None
+
     normalized = pyln.normalize.loudness(audio_f64, loudness, TARGET_LUFS)
-    if np.max(np.abs(normalized)) > 1.0:
-        return None
-    return normalized.astype(np.float32)
+    peak = np.max(np.abs(normalized))
+    if peak > 0.99:
+        normalized = normalized * (0.99 / peak)
+        return normalized.astype(np.float32), True
+    return normalized.astype(np.float32), False
+
+
+def ensure_mono(audio: np.ndarray) -> tuple[np.ndarray, bool]:
+    """Ensure audio is 1D (mono). Downmix if stereo/multi-channel.
+
+    Returns (mono_audio, was_multi_channel).
+    """
+    if audio.ndim == 1:
+        return audio, False
+    if audio.ndim == 2:
+        mono = np.mean(audio, axis=1)
+        return mono.astype(np.float32), True
+    return audio.flatten(), True
 
 
 def load_audio_chunk(audio_path, start_sample: int, chunk_samples: int, sr: int = TARGET_SR) -> np.ndarray:
@@ -78,7 +108,10 @@ def load_audio_chunk(audio_path, start_sample: int, chunk_samples: int, sr: int 
         if f.samplerate != sr:
             raise ValueError(f"Expected {sr}Hz got {f.samplerate}Hz")
         f.seek(start_sample)
-        return f.read(chunk_samples, dtype="float32")
+        chunk = f.read(chunk_samples, dtype="float32")
+    # Ensure mono
+    chunk, _ = ensure_mono(chunk)
+    return chunk
 
 
 def iter_audio_chunks(audio_path, chunk_minutes: int = 10, sr: int = TARGET_SR):
@@ -238,6 +271,9 @@ def snr_label(snr_db: float) -> str:
     if snr_db >= SNR_PASS:
         return "pass"
     if snr_db >= SNR_FLAG:
+        return "flag"
+    if snr_db >= SNR_REJECT:
+        
         return "flag"
     return "reject"
 
