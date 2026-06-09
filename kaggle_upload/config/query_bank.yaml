@@ -1,13 +1,4 @@
-# =============================================================================
-# Urdu S2S Pipeline — YouTube Query Bank
-# =============================================================================
-# Search queries for p1a_discover to find Urdu speech content on YouTube.
-# Each query targets a specific domain to ensure balanced corpus coverage.
-# ~200 queries as assumed by p1a throughput model.
-# =============================================================================
-
-# Discovery configuration parameters (used by p1a_discover.ipynb)
-min_duration_sec: 120         # Minimum video duration in seconds
+min_duration_sec: 100         # Minimum video duration in seconds
 max_duration_sec: 7200        # Maximum video duration in seconds
 max_videos_per_query: 50      # Max videos to fetch per search query
 max_total_videos: 50000       # Total video cap across all queries
