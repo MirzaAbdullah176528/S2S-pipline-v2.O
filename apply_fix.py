@@ -2,14 +2,21 @@ import pathlib
 import json 
 
 path = pathlib.Path("data.json")
+path_done = pathlib.Path('done_download.json')
 duration = 0
 
-with open( path , 'r', encoding='utf-8' ) as f:
+done_ids:list = []
+
+with open( path , 'r', encoding='utf-8' ) as f, open(path_done, 'r', encoding='utf-8') as f_d:
+    done = json.load(f_d)
     data = json.load(f)
-    for i, item in enumerate(data):
-        duration += item["duration_sec"]
-        if i % 100 == 0:
-            print(f"Processed {i} items, total duration so far: {duration} seconds")
+    for item in done:
+        print(item)
+        if isinstance(item, list):
+            done_ids = item.
+            print(item)
+
+    print(done_ids[:10])
     
     duration = duration / 3600
 
